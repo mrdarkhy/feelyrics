@@ -1,5 +1,10 @@
 // ── core state & helpers ──
 const $ = (id) => document.getElementById(id);
+// Safety net: if ANY runtime error occurs, never leave the intro stuck over the app.
+window.addEventListener("error", () => {
+  const i = document.getElementById("intro");
+  if (i && !i.classList.contains("end")) { i.classList.add("end"); setTimeout(() => i.classList.add("gone"), 600); }
+});
 const app = $("app"), lane = $("lane"), stream = $("stream");
 let song, lines, singable, transFirst, KEY;
 let idx = -1, mode = "idle", t0 = 0, timings = null, timers = [], capture = [];
@@ -440,10 +445,12 @@ $("fix-copy").addEventListener("click", async () => {
   catch { setStatus("Couldn\'t copy automatically — your fit is saved on this device."); }
 });
 
-$("q").addEventListener("input", (e) => { query = e.target.value; renderLibrary(); });
-$("f-from").addEventListener("change", (e) => { fromF = e.target.value; renderLibrary(); });
+const qEl = $("q"), fromEl = $("f-from");
+if (qEl) qEl.addEventListener("input", (e) => { query = e.target.value; renderLibrary(); });
+if (fromEl) fromEl.addEventListener("change", (e) => { fromF = e.target.value; renderLibrary(); });
 
 // ── boot ──
+try {
 loadSaved();
 renderFilters();
 renderLibrary();
@@ -451,6 +458,7 @@ let opened = false;
 if (location.hash.length > 4) opened = openFromText(location.hash);
 if (!opened) loadSong(SONGS[0].id);
 window.addEventListener("hashchange", () => { if (location.hash.length > 4) openFromText(location.hash); });
+} catch (e) { console.error("boot failed:", e); }
 
 // ── intro: once per session; any interaction ends it; never blocks the app ──
 (function () {
