@@ -1,0 +1,76 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Quicksand:wght@700&display=swap">
+<style>
+/* Feelyrics his kartı v2 — marka: #0B1511 / #E8E5D5 / #9B9B70 / #E5A943; salt tipografik (albüm görseli yok) */
+*{margin:0;box-sizing:border-box}
+body{background:#333;display:flex;flex-direction:column}
+.card{width:1080px;height:1920px;position:relative;background:#0B1511;color:#E8E5D5;
+  font-family:"Instrument Sans",system-ui,sans-serif;display:flex;flex-direction:column;
+  padding:150px 96px 130px;overflow:hidden}
+.card::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.06;
+  background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/></filter><rect width="240" height="240" filter="url(%23n)" opacity="0.55"/></svg>')}
+.top{display:flex;align-items:center;gap:22px}
+.top svg{width:96px;height:auto}
+.top .wm{font:700 44px "Quicksand",sans-serif;letter-spacing:-.02em}
+.top .pair{margin-left:auto;font:600 26px "Instrument Sans";letter-spacing:.08em;
+  border:3px solid var(--ac);color:var(--ac);border-radius:99px;padding:12px 26px}
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:44px}
+.credit{font:600 26px "Instrument Sans";letter-spacing:.22em;text-transform:uppercase;color:#9B9B70}
+.orig{font:italic 400 46px/1.35 "Instrument Sans";color:rgba(232,229,213,.62)}
+.orig::before{content:"“"}.orig::after{content:"”"}
+.fit{font:800 92px/1.12 "Bricolage Grotesque","Instrument Sans",sans-serif;letter-spacing:-.015em;text-wrap:balance}
+.rule{width:120px;height:6px;background:var(--ac);border-radius:3px}
+.lost{font:italic 400 39px/1.45 "Instrument Sans";color:#9B9B70;max-width:52ch}
+.lost b{font-style:normal;font-weight:600;color:rgba(232,229,213,.85)}
+.tags{display:flex;gap:16px;flex-wrap:wrap}
+.tag{font:600 26px "Instrument Sans";letter-spacing:.05em;color:var(--ac);
+  border:3px solid color-mix(in srgb,var(--ac) 55%,transparent);border-radius:99px;padding:12px 26px}
+.bot{display:flex;flex-direction:column;gap:34px}
+.ai{align-self:flex-start;font:600 26px "Instrument Sans";letter-spacing:.05em;color:rgba(232,229,213,.55);
+  border:3px dashed rgba(232,229,213,.35);border-radius:99px;padding:14px 28px}
+.cta{display:flex;align-items:baseline;justify-content:space-between;gap:20px;border-top:3px solid rgba(232,229,213,.14);padding-top:38px}
+.cta .q{font:700 40px "Bricolage Grotesque";letter-spacing:-.01em}
+.cta .u{font:600 28px "Instrument Sans";letter-spacing:.04em;color:var(--ac)}
+.mm{position:absolute;left:96px;bottom:52px;right:96px;display:flex;justify-content:space-between;
+  font:600 22px "Instrument Sans";letter-spacing:.22em;color:rgba(232,229,213,.35);text-transform:uppercase}
+</style></head><body>
+<script>
+const LOGO='<svg viewBox="0 0 120 64"><g fill="none" stroke="#E8E5D5" stroke-width="4" stroke-linecap="round"><rect x="4" y="7" width="112" height="50" rx="13"/><path d="M25 35c-1.5-7 4.5-11.5 10-9.5s7.5 7.5 3.5 11.5-12 3-13.5-2z" stroke-width="3.2"/><path d="M28 30.5q3-2 5 .5m-6.5 4q4 2.5 7-.5" stroke-width="2.2"/><path d="M41 34 C 54 46, 62 18, 74 27"/></g><path d="M90 22.5c4-4.5 12-2 12 5 0 7.5-8 10.5-12 16.5-4-6-12-9-12-16.5 0-7 8-9.5 12-5z" fill="#E5A943"/></svg>';
+const CARDS=[
+ {ac:"#E5A943",pair:"ES → EN",credit:"Bad Bunny — Tití Me Preguntó",
+  orig:"Tití me preguntó si tengo muchas novia'",
+  fit:"My auntie asked if I've got a lot of girls",
+  lost:"<b>What flat translation lost:</b> it says “aunt” — and drops the whole block-party warmth of tití.",
+  tags:["cultural-code","register"],ai:"AI draft — human feel-check pending",
+  q:"How would you land this line?",u:"mrdarkhy.github.io/feelyrics"},
+ {ac:"#b7c56b",pair:"ES → TR",credit:"Luis Fonsi — Despacito",
+  orig:"Despacito",
+  fit:"Yavaşçacık",
+  lost:"<b>Düz çeviri ne kaybetti:</b> “yavaşça” der — şefkati ve oyunu (-ito ↔ -cık) düşürür.",
+  tags:["biçim-gömülü","register"],ai:"AI taslak — insan his onayı bekliyor",
+  q:"Sen bu satırı nasıl oturturdun?",u:"mrdarkhy.github.io/feelyrics"},
+ {ac:"#E5A943",pair:"TR → EN",credit:"Zülfü Livaneli — Yiğidim Aslanım",
+  orig:"Yiğidim aslanım burda yatıyor",
+  fit:"Here lies my brave one, my lionheart",
+  lost:"<b>What flat translation lost:</b> word-for-word gives “my lion lies here” — a zoo, not a eulogy.",
+  tags:["register","cultural-code"],ai:"AI draft — human feel-check pending",
+  q:"How would you land this line?",u:"mrdarkhy.github.io/feelyrics"},
+];
+document.body.innerHTML=CARDS.map(c=>`
+<div class="card" style="--ac:${c.ac}">
+  <div class="top">${LOGO}<span class="wm">feelyrics</span><span class="pair">${c.pair}</span></div>
+  <div class="mid">
+    <div class="credit">${c.credit}</div>
+    <div class="orig">${c.orig}</div>
+    <div class="fit">${c.fit}</div>
+    <div class="rule"></div>
+    <div class="lost">${c.lost}</div>
+    <div class="tags">${c.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+  </div>
+  <div class="bot">
+    <span class="ai">${c.ai}</span>
+    <div class="cta"><span class="q">${c.q}</span><span class="u">${c.u}</span></div>
+  </div>
+  <div class="mm"><span>same music. a deeper story.</span><span>feel &gt; meaning &gt; words</span></div>
+</div>`).join("");
+</script></body></html>
