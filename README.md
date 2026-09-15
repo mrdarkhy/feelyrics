@@ -1,31 +1,31 @@
 # Feelyrics
 
-Şarkı sözlerini kelimesi kelimesine değil, olabilecek en yakın **his**le çeviren
-transcreation player'ı — *his > anlam > kelime*.
+A transcreation player that translates song lyrics not word for word, but into the
+**closest possible feeling** — *feel > meaning > words*.
 
-**Canlı sayfa:** GitHub Pages'i açınca `https://<kullanici>.github.io/feelyrics/` adresinde.
+**Live page:** once GitHub Pages is enabled, at `https://<user>.github.io/feelyrics/`.
 
-## Nasıl çalışır
-- `index.html` tek dosyadır; sunucu ve veritabanı yoktur.
-- Paylaşılan şarkılar linkin `#f1.` kısmında sıkıştırılmış olarak taşınır
-  (deflate + base64url; emsal: mermaid.live, Excalidraw). **Söz metni hiçbir sunucuya gönderilmez.**
-- Sayfada önyüklü tek tam şarkı, sözleri kamu malı olan Guantanamera'dır (José Martí, 1891).
-  Telifli sözler repo'ya **eklenmez** — bkz. CONTRIBUTING.
+## How it works
+- `index.html` is a single file; there is no server and no database.
+- Shared songs travel inside the `#f1.` part of the link (deflate + base64url;
+  same pattern as mermaid.live and Excalidraw share links). **Lyrics are never sent to any server.**
+- The only fully preloaded song is Guantanamera, whose lyrics are in the public domain
+  (José Martí, 1891). Copyrighted lyrics are **never** committed to this repo — see CONTRIBUTING.
 
-## Kurulum (bir kez)
-1. Bu klasörü GitHub'da yeni bir repo'ya push'la (örn. `feelyrics`).
+## Setup (once)
+1. Push this folder to a new GitHub repo (e.g. `feelyrics`).
 2. Repo → Settings → Pages → Source: `main` branch, `/ (root)` → Save.
-3. Birkaç dakika içinde site yayında.
+3. The site is live within a few minutes.
 
-## Katkı ve roller (Wikipedia modeli, sıfır backend)
-- **Herkes:** şarkı isteği → Issue ("İstek şarkı" şablonu); satır düzeltmesi → Pull Request.
-- **Onay:** hiçbir değişiklik onaysız siteye girmez — PR'ları maintainer onaylar.
-- **Güvenilen doğrulayıcılar:** isabetli PR'ları kabul edilenler *collaborator* yapılır
-  ve doğrudan editleyebilir (rol merdiveni: Dinleyici → Doğrulayıcı → Uzman → Küratör).
+## Contributing & roles (a Wikipedia-style model with zero backend)
+- **Anyone:** request a song → Issue ("Song request" template); suggest a better line → Pull Request.
+- **Approval:** nothing reaches the site unapproved — a maintainer reviews every PR.
+- **Trusted validators:** contributors with consistently accepted PRs become *collaborators*
+  and can edit directly (role ladder: Listener → Validator → Expert → Curator).
 
-## Yol haritası
-- v2: şarkı verilerinin `songs/*.json` dosyalarına ayrılması (PR'lar daha temiz diff verir)
-- PWA manifest'i (telefonda "ana ekrana ekle")
-- Üyelikli doğrulayıcı akışı (satır durum-makinesi: AI-taslak → önerildi → oturdu → disputed → küratör)
+## Roadmap
+- v2: split song data into `songs/*.json` (cleaner PR diffs)
+- PWA manifest ("add to home screen" on phones)
+- Member accounts for validators (line state machine: AI draft → suggested → settled → disputed → curator)
 
-Lisans: henüz seçilmedi (repo sahibinin kararı).
+License: not chosen yet (repo owner's call).

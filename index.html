@@ -1,4 +1,4 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Feelyrics</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
@@ -91,71 +91,71 @@
 </style>
 
 </head><body><div id="app" class="still notes">
-  <nav id="lib" aria-label="Kütüphane">
+  <nav id="lib" aria-label="Library">
     <div class="brand">
       <div class="cover" aria-hidden="true"></div>
-      <div><b>Feelyrics</b><span>his &gt; anlam &gt; kelime</span></div>
+      <div><b>Feelyrics</b><span>feel &gt; meaning &gt; words</span></div>
     </div>
     <div id="songlist"></div>
-    <button id="b-open" class="addbtn">🔗 Link kodu yapıştır</button>
-    <button id="b-req" class="addbtn">＋ Şarkı iste / öner</button>
-    <div class="libnote">Bu sayfa tek dosyadır: tarayıcıdan <b>Ctrl/Cmd+S</b> ile indirip çevrimdışı kullanabilirsin. Paylaşılan şarkılar linkin <code>#</code> kısmında taşınır — söz metni hiçbir sunucuya gönderilmez.</div>
+    <button id="b-open" class="addbtn">🔗 Paste a link code</button>
+    <button id="b-req" class="addbtn">＋ Request a song</button>
+    <div class="libnote">This page is a single file: save it with <b>Ctrl/Cmd+S</b> and it works offline. Shared songs travel in the <code>#</code> part of the link — lyrics are never sent to any server.</div>
   </nav>
   <div id="scrim"></div>
 
   <div id="main">
     <header>
-      <button id="b-lib" class="ghost" aria-label="Kütüphaneyi aç">☰ Liste</button>
+      <button id="b-lib" class="ghost" aria-label="Open library">☰ Library</button>
       <div class="meta"><b id="t-title"></b><span id="t-sub"></span></div>
       <div class="spacer"></div>
-      <div class="seg" role="group" aria-label="Önce hangi dil">
+      <div class="seg" role="group" aria-label="Which language first">
         <button id="m-t" class="on"></button><button id="m-o"></button>
       </div>
-      <button id="b-notes" class="ghost on">✎ notlar</button>
-      <button id="b-share" class="ghost">🔗 paylaş</button>
+      <button id="b-notes" class="ghost on">✎ notes</button>
+      <button id="b-share" class="ghost">🔗 share</button>
     </header>
     <div class="notice" id="notice"></div>
     <div id="stream" tabindex="0"><div class="lane" id="lane"></div></div>
     <footer>
-      <button id="b-main" class="cta">Tap-sync başlat</button>
-      <button id="b-reset" class="ghost">Sıfırla</button>
+      <button id="b-main" class="cta">Start tap-sync</button>
+      <button id="b-reset" class="ghost">Reset</button>
       <span id="status"></span>
       <div class="bar"><i id="prog"></i></div>
     </footer>
   </div>
 </div>
 
-<div id="opensheet" class="sheet" role="dialog" aria-label="Link kodu yapıştır">
+<div id="opensheet" class="sheet" role="dialog" aria-label="Paste a link code">
   <div class="sheet-in">
-    <div class="src">Şarkı linki / kodu aç</div>
-    <p>Sana gelen Feelyrics linkini tarayıcıya yapıştırman yeterli. Link açılmadıysa, linkin <code>#f1.</code> ile başlayan kısmını (ya da tamamını) buraya yapıştır:</p>
+    <div class="src">Open a song link / code</div>
+    <p>Normally you just open a Feelyrics link in your browser. If it didn't open, paste the part starting with <code>#f1.</code> (or the whole link) here:</p>
     <textarea id="open-text" placeholder="#f1.eNq..."></textarea>
     <div class="sheet-row">
-      <button class="ghost" data-close>Vazgeç</button>
-      <button id="open-go" class="cta">Aç</button>
+      <button class="ghost" data-close>Cancel</button>
+      <button id="open-go" class="cta">Open</button>
     </div>
   </div>
 </div>
 
-<div id="reqsheet" class="sheet" role="dialog" aria-label="Şarkı iste">
+<div id="reqsheet" class="sheet" role="dialog" aria-label="Request a song">
   <div class="sheet-in">
-    <div class="src">Şarkı iste / öner</div>
-    <p>Feelyrics şu an davetli erken sürümde. Bir şarkının his-çevirisini istiyorsan ya da bir satırı sen daha iyi oturtacağını düşünüyorsan, sana bu linki gönderen kişiye şarkının adını (ve sözlerini) ilet — çeviri hazırlanınca link olarak geri gelir. Katkı ve doğrulayıcı üyeliği yakında burada.</p>
+    <div class="src">Request or suggest a song</div>
+    <p>Feelyrics is in an invite-only early version. If you want a song feel-translated — or you think you can land a line better — tell the person who sent you this link the song's name (and lyrics). The translation comes back as a link. Contributor accounts and the validator ladder are coming here soon.</p>
     <div class="sheet-row">
-      <button class="ghost" data-close>Kapat</button>
+      <button class="ghost" data-close>Close</button>
     </div>
   </div>
 </div>
 
-<div id="sharesheet" class="sheet" role="dialog" aria-label="Paylaş">
+<div id="sharesheet" class="sheet" role="dialog" aria-label="Share">
   <div class="sheet-in">
-    <div class="src">Bu şarkıyı paylaş</div>
-    <p>Aşağıdaki linki kopyala — açan kişi bu sayfanın aynısını, bu şarkıyla görür. Veri linkin <code>#</code> kısmındadır, sunucuya gitmez.</p>
+    <div class="src">Share this song</div>
+    <p>Copy the link below — whoever opens it sees this same page with this song. The data lives in the <code>#</code> part of the link; it never touches a server.</p>
     <textarea id="share-text" readonly></textarea>
     <div class="sheet-row">
       <span id="share-msg" style="flex:1;font:italic 400 11.5px var(--ui);color:var(--dim)"></span>
-      <button class="ghost" data-close>Kapat</button>
-      <button id="share-copy" class="cta">Kopyala</button>
+      <button class="ghost" data-close>Close</button>
+      <button id="share-copy" class="cta">Copy</button>
     </div>
   </div>
 </div>
@@ -163,10 +163,10 @@
 <script>
 // ── önyüklü içerik: yalnız kamu malı sözler (José Martí, 1891 — Guantanamera) ──
 const SONGS = [{
-  id: "guantanamera-es-tr", grp: "Feelyrics seçkisi",
+  id: "guantanamera-es-tr", grp: "Feelyrics picks",
   title: "Guantanamera (cantável)", artist: "José Martí / Küba halk şarkısı",
-  pair: "ES→TR", engine: "0.1.1", tLabel: "önce TR", oLabel: "önce ES", transFirst: true,
-  feel: "özü sözü bir vedalaşma — ES octosílabo ↔ TR 8'li hece ölçüsü ikizi; söylenebilir uyarlama",
+  pair: "ES→TR", engine: "0.1.1", tLabel: "TR first", oLabel: "ES first", transFirst: true,
+  feel: "earnest farewell — Spanish octosílabo meets the Turkish 8-syllable folk meter; a singable adaptation into Turkish",
   sections: [["Cantável dörtlük (8'li hece, ABCB)", [
     ["Yo soy un hombre sincero", "Özü sözü bir adamım", "İspanyol octosílabo'su ile TR halk şiirinin 8'li hece ölçüsü yapısal ikiz — ölçü bedavaya gelir. \"Sincero\" ↔ \"özü sözü bir\" deyim-ikizi. [prozodi · kültürel-kod]"],
     ["De donde crece la palma", "Palmiyeler diyarından", "8/8 hece; memleket gururu \"diyar\" koduyla. [his]"],
@@ -196,8 +196,8 @@ function decodeSong(frag) {
   const pkg = JSON.parse(pako.inflate(b64u.dec(raw), { to: "string" }));
   if (!pkg.sections) throw new Error("bad pkg");
   const id = "link-" + (pkg.title + "-" + pkg.artist).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 48);
-  return { id, grp: "Linkle gelenler", title: pkg.title, artist: pkg.artist, pair: pkg.pair || "?",
-    engine: pkg.engine || "?", tLabel: pkg.tLabel || "çeviri önce", oLabel: pkg.oLabel || "orijinal önce",
+  return { id, grp: "Opened from links", title: pkg.title, artist: pkg.artist, pair: pkg.pair || "?",
+    engine: pkg.engine || "?", tLabel: pkg.tLabel || "translation first", oLabel: pkg.oLabel || "original first",
     transFirst: true, feel: pkg.feel || "", sections: pkg.sections };
 }
 
@@ -256,16 +256,16 @@ function loadSong(id) {
   $("t-sub").textContent = `${song.artist} · ${song.pair} · Feelyrics v${song.engine}`;
   $("m-t").textContent = song.tLabel; $("m-o").textContent = song.oLabel;
   $("notice").innerHTML = song.feel
-    ? `<b>His profili:</b> ${song.feel}`
-    : `Feelyrics, sözü kelimesi kelimesine değil <b>en yakın hisle</b> çevirir — satır notları nedenini anlatır (✎ notlar).`;
+    ? `<b>Feel profile:</b> ${song.feel}`
+    : `Feelyrics translates lyrics not word for word but into the <b>closest feeling</b> — the line notes explain each call (✎ notes).`;
   setSeg();
   try { const v = JSON.parse(localStorage.getItem(KEY) || "null");
     timings = Array.isArray(v) && v.length === singable.length ? v : null; } catch { timings = null; }
   render(); markLibrary();
-  $("b-main").textContent = timings ? "Senkron oynat" : "Tap-sync başlat";
+  $("b-main").textContent = timings ? "Play synced" : "Start tap-sync";
   setStatus(timings
-    ? "Zamanlamalar bu cihazda kayıtlı. Parçayı başlat ve tam o anda <b>Senkron oynat</b>a bas."
-    : "Dinlerken oku; istersen parçayı çal, her satırda dokunarak tap-sync ile senkronla.");
+    ? "Timings are saved on this device. Start the track and hit <b>Play synced</b> at that exact moment."
+    : "Read along while listening — or play the track and tap each line to sync it.");
 }
 function setSeg() { $("m-t").classList.toggle("on", transFirst); $("m-o").classList.toggle("on", !transFirst); }
 function render() {
@@ -307,8 +307,8 @@ function jumpTo(i) {
 function startTap() {
   clearTimers(); capture = new Array(singable.length).fill(null);
   mode = "tap"; idx = -1; t0 = performance.now(); paint();
-  setStatus("<b>Tap-sync açık.</b> Her satır söylenirken dokun / boşluk tuşuna bas.");
-  $("b-main").textContent = "Bitir"; stream.focus();
+  setStatus("<b>Tap-sync on.</b> Tap (or press space) as each line is sung.");
+  $("b-main").textContent = "Finish"; stream.focus();
 }
 function finishTap() {
   mode = "idle";
@@ -317,16 +317,16 @@ function finishTap() {
     for (let i = 0; i < capture.length; i++) if (capture[i] == null) capture[i] = i ? capture[i - 1] + 2400 : 0;
     timings = capture;
     try { localStorage.setItem(KEY, JSON.stringify(timings)); } catch {}
-    setStatus("<b>Zamanlamalar alındı</b> (bu cihazda saklanır). Parçayı başa sar ve Senkron oynat'a bas.");
-  } else setStatus(`${got}/${singable.length} satır yakalandı — tam kayıt için tap-sync'i tekrar çalıştır.`);
+    setStatus("<b>Timings captured</b> (stored on this device). Rewind the track and hit Play synced.");
+  } else setStatus(`Captured ${got}/${singable.length} lines — run tap-sync again for a full take.`);
   $("b-main").textContent = timings ? "Senkron oynat" : "Tap-sync başlat";
 }
 function startReplay() {
   clearTimers(); mode = "replay"; idx = -1; paint();
-  setStatus("<b>Senkron.</b> Parça başlar başlamaz basmış olman gerekir.");
+  setStatus("<b>Synced.</b> You should have pressed play right as the track started.");
   timings.forEach((t, i) => timers.push(setTimeout(() => { idx = i; paint(); if (i === timings.length - 1) endReplay(); }, t)));
 }
-function endReplay() { mode = "idle"; setStatus("Bitti. Tekrar oynat ya da tap-sync ile zamanlamayı sıkılaştır."); }
+function endReplay() { mode = "idle"; setStatus("Done. Replay it, or tighten the timing with another tap-sync."); }
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
 // ── paylaş / aç ──
@@ -334,7 +334,7 @@ function openFromText(txt) {
   try {
     const s = decodeSong(txt.trim());
     saveSong(s); renderLibrary(); loadSong(s.id);
-    setStatus("<b>Şarkı linkten açıldı</b> ve bu cihazın listesine eklendi.");
+    setStatus("<b>Song opened from the link</b> and added to this device's library.");
     return true;
   } catch { return false; }
 }
@@ -350,7 +350,7 @@ $("share-copy").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(t.value); ok = true; } catch {
     try { ok = document.execCommand("copy"); } catch {}
   }
-  $("share-msg").textContent = ok ? "Kopyalandı." : "Kopyalanamadı — metni elle seçip kopyala.";
+  $("share-msg").textContent = ok ? "Copied." : "Couldn't copy — select the text and copy it manually.";
 });
 $("b-open").addEventListener("click", () => { app.classList.remove("libopen"); $("open-text").value = ""; $("opensheet").classList.add("open"); });
 $("open-go").addEventListener("click", () => {
@@ -370,7 +370,7 @@ $("b-reset").addEventListener("click", () => {
   clearTimers(); mode = "idle"; idx = -1; timings = null; capture = [];
   try { localStorage.removeItem(KEY); } catch {}
   paint(); $("b-main").textContent = "Tap-sync başlat";
-  setStatus("Sıfırlandı. Parçayı çal, her satırda dokun.");
+  setStatus("Reset. Play the track and tap on each line.");
 });
 $("m-t").addEventListener("click", () => { transFirst = true; setSeg(); render(); });
 $("m-o").addEventListener("click", () => { transFirst = false; setSeg(); render(); });

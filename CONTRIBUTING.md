@@ -1,24 +1,24 @@
-# Katkı rehberi
+# Contributing
 
-## Altın kural: telif
-- Bu repo'ya **telifli söz metni eklenmez** (tam şarkı sözü, uzun alıntı vb.).
-- Kamu malı olduğunu kaynağıyla gösterebildiğin sözler eklenebilir (örn. 1929 öncesi eserler, geleneksel halk şarkıları).
-- Telifli şarkılar yalnız `#f1.` paylaşım linkleriyle, kişisel/birebir dolaşımda yaşar.
+## The golden rule: copyright
+- **Never commit copyrighted lyrics** to this repo (full lyrics, long quotes, etc.).
+- Lyrics you can show to be in the public domain are fine (e.g. pre-1929 works, traditional folk songs) — cite the source.
+- Copyrighted songs live only as `#f1.` share links, in personal one-to-one circulation.
 
-## Satır düzeltmesi önermek (PR)
-1. `index.html` içindeki ilgili satırı bul: `["orijinal", "oturtma", "not"]`.
-2. Yalnız **oturtmayı** ve gerekiyorsa notu değiştir; orijinal satıra dokunma.
-3. PR açıklamasında **en az bir neden-etiketi** ver:
-   `his · register · metafor · prozodi · kültürel-kod · literal-tercih · biçim-gömülü`
-   ve tek cümleyle nedenini yaz ("neden böyle daha iyi oturuyor?").
-4. Makine çevirisi yapıştırma — buranın işi düz çeviri değil, his.
+## Suggesting a better line (PR)
+1. Find the line in `index.html`: `["original", "rendering", "note"]`.
+2. Change only the **rendering** (and the note if needed); never touch the original line.
+3. In the PR description, give **at least one reason tag**:
+   `feel · register · metaphor · prosody · cultural-code · literal-wins · form-embedded`
+   and one sentence on *why your version lands the feeling better*.
+4. No machine translation paste-ins — this project is about feeling, not literal accuracy.
 
-## Şarkı istemek
-"İstek şarkı" Issue şablonunu kullan. Sözleri Issue'ya YAPIŞTIRMA (telif);
-şarkı adı + dil çifti + hangi satırın seni yakaladığı yeter.
+## Requesting a song
+Use the "Song request" issue template. Do NOT paste full lyrics into the issue (copyright);
+song title + language pair + the one line that got you is enough.
 
-## Roller
-- Kabul edilen ilk PR'ın seni **Doğrulayıcı** yapar (adın README'ye eklenir).
-- İsabetli katkıları süren doğrulayıcılar **collaborator** (Uzman) olur: doğrudan edit + PR onaylama.
-- Anlaşmazlıkta karar Küratör'de; kararın gerekçesi PR'a yazılır (gerekçeli hakemlik).
-- Moderasyon eylemi itibar kazandırmaz; oylanan insan değil satırdır.
+## Roles
+- Your first accepted PR makes you a **Validator** (your name goes in the README credits).
+- Validators with a track record of accepted edits become **collaborators** (Experts): direct edit + PR review rights.
+- Disputes are settled by a Curator, who must write the reasoning into the PR (reasoned refereeing, not voting).
+- Moderation actions never earn reputation; we vote on lines, never on people.
