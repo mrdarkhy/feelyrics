@@ -104,12 +104,12 @@
   #intro .ic{position:absolute;color:rgba(233,228,210,.4);font:600 10px var(--ui);letter-spacing:.22em;text-transform:uppercase}
   #intro .ic.tl{top:18px;left:22px}#intro .ic.tr{top:18px;right:22px;text-align:right}
   #intro .ic.bl{bottom:18px;left:22px}#intro .ic.br{bottom:18px;right:22px;text-align:right}
-  .iwrap{display:flex;flex-direction:column;align-items:center;gap:26px;padding:24px;max-width:min(680px,92vw)}
+   .iwrap{display:flex;flex-direction:column;align-items:center;gap:34px;padding:24px;max-width:min(680px,92vw)}
   .ilogo{width:clamp(120px,17vw,170px);height:auto;opacity:0;transform:translateY(8px);
     animation:iLg calc(var(--k)*.6s) cubic-bezier(.2,.8,.2,1) forwards}
   @keyframes iLg{to{opacity:1;transform:none}}
-  .ihead{color:#E8E5D5;font:700 clamp(48px,8.4vw,96px)/0.95 "Quicksand",var(--disp);letter-spacing:-.02em;
-    overflow:hidden}
+    .ihead{color:#E8E5D5;font:700 clamp(48px,8.4vw,96px)/1.08 "Quicksand",var(--disp);letter-spacing:-.02em;
+    padding-bottom:.08em;overflow:hidden;position:relative;z-index:1}
   .ihead span{display:inline-block;transform:translateY(110%);animation:iUp calc(var(--k)*.7s) cubic-bezier(.2,.8,.2,1) calc(var(--k)*.12s) forwards}
   @keyframes iUp{to{transform:none}}
   .ihero{margin:0;border:1px solid rgba(233,228,210,.16);border-radius:14px;overflow:hidden;
