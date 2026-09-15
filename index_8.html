@@ -1,0 +1,403 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Feelyrics</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<style>
+  /* Feelyrics public viewer — tek dosya, sunucusuz. Söz verisi linkin # kısmında taşınır. */
+  :root {
+    --ground:#161122; --ground-2:#1e1630; --panel:#120d1d;
+    --raised:rgba(255,244,230,.05); --line:rgba(255,244,230,.1);
+    --hi:#f6efe3; --dim:rgba(246,239,227,.34); --past:rgba(246,239,227,.18);
+    --sub:#b3a3cc; --ember:#f2a65a; --ember-ink:#241303; --ember-soft:rgba(242,166,90,.14);
+    --ok:#8fd0a0;
+    --ui:"Instrument Sans",system-ui,-apple-system,sans-serif;
+    --disp:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--ground);color:var(--hi);font-family:var(--ui);overflow:hidden}
+  #app{height:100dvh;display:flex}
+  #lib{width:288px;flex:none;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--line);min-height:0}
+  .brand{display:flex;align-items:center;gap:10px;padding:16px 16px 12px}
+  .brand .cover{width:34px;height:34px;border-radius:8px;flex:none;background:radial-gradient(circle at 30% 30%,#f2a65a 0%,#a4522e 45%,#3a1f33 100%);box-shadow:0 2px 14px rgba(242,166,90,.35)}
+  .brand b{font:800 17px var(--disp)}
+  .brand span{display:block;font:500 11px var(--ui);color:var(--dim)}
+  #songlist{flex:1;overflow-y:auto;padding:4px 10px 18px;min-height:0}
+  .grp{font:600 10.5px var(--ui);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding:16px 8px 7px}
+  .song{width:100%;text-align:left;display:flex;align-items:center;gap:10px;background:none;border:none;border-radius:10px;cursor:pointer;padding:9px 10px;color:var(--hi)}
+  .song:hover{background:var(--raised)}
+  .song.on{background:var(--ember-soft)}
+  .song .tt{flex:1;min-width:0;line-height:1.25}
+  .song .tt b{display:block;font:700 13.5px var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .song .tt span{font:400 11.5px var(--ui);color:var(--dim)}
+  .song.on .tt b{color:var(--ember)}
+  .pair{flex:none;font:600 10px var(--ui);letter-spacing:.05em;color:var(--sub);background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+  .addbtn{margin:6px 14px 4px;background:none;border:1px dashed rgba(242,166,90,.5);border-radius:10px;color:var(--ember);cursor:pointer;font:600 12.5px var(--ui);padding:9px 12px}
+  .addbtn:hover{background:var(--ember-soft)}
+  .libnote{padding:10px 16px 14px;font:italic 400 11px/1.5 var(--ui);color:var(--dim);border-top:1px solid var(--line)}
+  .libnote a{color:var(--ember)}
+  #main{flex:1;min-width:0;display:flex;flex-direction:column;background:linear-gradient(170deg,var(--ground-2) 0%,var(--ground) 45%,#120d1c 100%)}
+  header{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  #b-lib{display:none}
+  .meta{line-height:1.25;min-width:0}
+  .meta b{font-family:var(--disp);font-weight:800;font-size:16px;display:block}
+  .meta span{font-size:12px;color:var(--dim)}
+  .spacer{flex:1}
+  .seg{display:flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .seg button{background:none;border:none;color:var(--dim);cursor:pointer;font:600 12px var(--ui);padding:7px 13px}
+  .seg button.on{background:var(--raised);color:var(--hi)}
+  .ghost{background:none;border:1px solid var(--line);border-radius:99px;color:var(--dim);cursor:pointer;font:600 12px var(--ui);padding:7px 13px}
+  .ghost.on{color:var(--ember);border-color:rgba(242,166,90,.45)}
+  button:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+  .notice{margin:14px auto 0;max-width:660px;width:calc(100% - 48px);font:400 12.5px/1.5 var(--ui);color:var(--sub);background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+  .notice b{color:var(--ember);font-weight:600}
+  #stream{flex:1;overflow-y:auto;scroll-behavior:smooth;padding:22vh 24px 36vh;min-height:0;-webkit-mask-image:linear-gradient(transparent 0,#000 8%,#000 88%,transparent 100%);mask-image:linear-gradient(transparent 0,#000 8%,#000 88%,transparent 100%)}
+  @media (prefers-reduced-motion:reduce){#stream{scroll-behavior:auto}}
+  .lane{max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+  .kind{font:600 11px var(--ui);letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:18px 0 -8px}
+  .ln{cursor:pointer;position:relative}
+  .ln .main{font-family:var(--disp);font-weight:800;font-size:clamp(21px,3.2vw,30px);line-height:1.22;color:var(--dim);transition:color .3s;text-wrap:balance}
+  .ln .alt{font:400 14.5px/1.4 var(--ui);color:transparent;margin-top:4px;transition:color .3s}
+  .ln .note{display:none;font:italic 400 13px/1.5 var(--ui);color:var(--sub);border-left:2px solid rgba(179,163,204,.4);padding-left:10px;margin-top:8px;max-width:52ch}
+  #app.notes .ln .note{display:block}
+  .ln.done .main{color:var(--past)}
+  .ln.done .alt{color:rgba(179,163,204,.35)}
+  .ln.now .main{color:var(--hi);text-shadow:0 0 34px rgba(242,166,90,.45)}
+  .ln.now .alt{color:var(--sub)}
+  .ln.now::before{content:"";position:absolute;inset:-12px -18px;z-index:-1;background:radial-gradient(ellipse at left center,var(--ember-soft),transparent 70%);border-radius:14px}
+  #app.still .ln .main{color:var(--hi);font-size:clamp(19px,2.8vw,26px)}
+  #app.still .ln .alt{color:var(--sub)}
+  footer{padding:12px 20px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .cta{background:var(--ember);color:var(--ember-ink);border:none;border-radius:99px;font:700 13.5px var(--ui);padding:11px 22px;cursor:pointer}
+  .cta:active{transform:scale(.97)}
+  #status{font:500 12.5px var(--ui);color:var(--dim);flex:1;min-width:170px}
+  #status b{color:var(--ember);font-weight:600}
+  .bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;flex-basis:100%}
+  .bar i{display:block;height:100%;width:0;background:var(--ember);transition:width .3s}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--ground-2);border-top:1px solid var(--line);box-shadow:0 -18px 50px rgba(0,0,0,.5);padding:18px 22px 20px;display:none}
+  .sheet.open{display:block}
+  .sheet-in{max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .sheet .src{font:700 15px var(--disp);color:var(--sub)}
+  .sheet p{font:400 13px/1.55 var(--ui);color:var(--sub);max-width:60ch}
+  .sheet textarea{width:100%;background:var(--raised);border:1px solid var(--line);border-radius:10px;color:var(--hi);font:500 13px/1.5 var(--ui);padding:10px 12px;resize:vertical;min-height:72px}
+  .sheet-row{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+  @media (max-width:880px){
+    #lib{position:fixed;inset:0 auto 0 0;z-index:30;width:min(320px,86vw);transform:translateX(-102%);transition:transform .22s ease;box-shadow:24px 0 60px rgba(0,0,0,.5)}
+    #app.libopen #lib{transform:none}
+    #b-lib{display:inline-block}
+    #scrim{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.45);display:none}
+    #app.libopen #scrim{display:block}
+  }
+</style>
+
+</head><body><div id="app" class="still notes">
+  <nav id="lib" aria-label="Library">
+    <div class="brand">
+      <div class="cover" aria-hidden="true"></div>
+      <div><b>Feelyrics</b><span>feel &gt; meaning &gt; words</span></div>
+    </div>
+    <div id="songlist"></div>
+    <button id="b-open" class="addbtn">🔗 Paste a link code</button>
+    <button id="b-req" class="addbtn">＋ Request a song</button>
+    <div class="libnote">This page is a single file: save it with <b>Ctrl/Cmd+S</b> and it works offline. Shared songs travel in the <code>#</code> part of the link — lyrics are never sent to any server.</div>
+  </nav>
+  <div id="scrim"></div>
+
+  <div id="main">
+    <header>
+      <button id="b-lib" class="ghost" aria-label="Open library">☰ Library</button>
+      <div class="meta"><b id="t-title"></b><span id="t-sub"></span></div>
+      <div class="spacer"></div>
+      <div class="seg" role="group" aria-label="Which language first">
+        <button id="m-t" class="on"></button><button id="m-o"></button>
+      </div>
+      <button id="b-notes" class="ghost on">✎ notes</button>
+      <button id="b-share" class="ghost">🔗 share</button>
+    </header>
+    <div class="notice" id="notice"></div>
+    <div id="stream" tabindex="0"><div class="lane" id="lane"></div></div>
+    <footer>
+      <button id="b-main" class="cta">Start tap-sync</button>
+      <button id="b-reset" class="ghost">Reset</button>
+      <span id="status"></span>
+      <div class="bar"><i id="prog"></i></div>
+    </footer>
+  </div>
+</div>
+
+<div id="opensheet" class="sheet" role="dialog" aria-label="Paste a link code">
+  <div class="sheet-in">
+    <div class="src">Open a song link / code</div>
+    <p>Normally you just open a Feelyrics link in your browser. If it didn't open, paste the part starting with <code>#f1.</code> (or the whole link) here:</p>
+    <textarea id="open-text" placeholder="#f1.eNq..."></textarea>
+    <div class="sheet-row">
+      <button class="ghost" data-close>Cancel</button>
+      <button id="open-go" class="cta">Open</button>
+    </div>
+  </div>
+</div>
+
+<div id="reqsheet" class="sheet" role="dialog" aria-label="Request a song">
+  <div class="sheet-in">
+    <div class="src">Request or suggest a song</div>
+    <p>Feelyrics is in an invite-only early version. If you want a song feel-translated — or you think you can land a line better — tell the person who sent you this link the song's name (and lyrics). The translation comes back as a link. Contributor accounts and the validator ladder are coming here soon.</p>
+    <div class="sheet-row">
+      <button class="ghost" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="sharesheet" class="sheet" role="dialog" aria-label="Share">
+  <div class="sheet-in">
+    <div class="src">Share this song</div>
+    <p>Copy the link below — whoever opens it sees this same page with this song. The data lives in the <code>#</code> part of the link; it never touches a server.</p>
+    <textarea id="share-text" readonly></textarea>
+    <div class="sheet-row">
+      <span id="share-msg" style="flex:1;font:italic 400 11.5px var(--ui);color:var(--dim)"></span>
+      <button class="ghost" data-close>Close</button>
+      <button id="share-copy" class="cta">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── önyüklü içerik: yalnız kamu malı sözler (José Martí, 1891 — Guantanamera) ──
+const SONGS = [{
+  id: "guantanamera-es-tr", grp: "Feelyrics picks",
+  title: "Guantanamera (cantável)", artist: "José Martí / Küba halk şarkısı",
+  pair: "ES→TR", engine: "0.1.1", tLabel: "TR first", oLabel: "ES first", transFirst: true,
+  feel: "earnest farewell — Spanish octosílabo meets the Turkish 8-syllable folk meter; a singable adaptation into Turkish",
+  sections: [["Cantável dörtlük (8'li hece, ABCB)", [
+    ["Yo soy un hombre sincero", "Özü sözü bir adamım", "İspanyol octosílabo'su ile TR halk şiirinin 8'li hece ölçüsü yapısal ikiz — ölçü bedavaya gelir. \"Sincero\" ↔ \"özü sözü bir\" deyim-ikizi. [prozodi · kültürel-kod]"],
+    ["De donde crece la palma", "Palmiyeler diyarından", "8/8 hece; memleket gururu \"diyar\" koduyla. [his]"],
+    ["Y antes de morirme quiero", "Ölmeden önce isterim", "8/8 (ES sinalefle 8). [prozodi]"],
+    ["Echar mis versos del alma", "Şiirimi dökmek candan", "\"Del alma\" ↔ \"candan\" his-ikizi; devrik dizim türkü register'ında doğal ve kafiyeyi kurtarır: diyarından/candan — ES palma/alma ABCB düzeni TR'de de korundu. [his · prozodi · register]"],
+    ["Guantanamera, guajira Guantanamera", "Guantanamera, guajira Guantanamera (çevrilmez)", "Nakarat küresel loanword — aynen söylenir. [kültürel-kod]"],
+  ]]],
+}];
+
+// ── catalog: core entries (max 2 lines per song — minimal quote policy) ──
+const CATALOG = [{"id":"gulpembe-tr-en","grp":"TR classics · TR→EN","title":"Gülpembe","artist":"Barış Manço","pair":"TR→EN","engine":"0.1.1","tLabel":"EN first","oLabel":"TR first","transFirst":true,"feel":"bright-grief — majör tonda ağıt","sections":[["Core lines (minimal quote)",[["Sen gülünce güller açar Gülpembe","When you laugh, roses bloom, Gülpembe","TR'de \"gül-\" kökü hem gülmek hem gül; isim (Gül-pembe) de aynı köke bağlı. EN'de laugh/rose bağı yok — kök-oyununun yarısı feda, imge korunur. İsim çevrilmez (keep+gloss). [biçim-gömülü · kültürel-kod]"],["Bizi bırakıp nereye gittin Gülpembe","Where have you gone and left us, Gülpembe","Sitem değil yumuşak ağıt: \"why did you leave\" suçlar, \"where have you gone\" arar. [his]"]]]]},{"id":"bu-aksam-tr-en","grp":"TR classics · TR→EN","title":"Bu Akşam","artist":"Duman","pair":"TR→EN","engine":"0.1.1","tLabel":"EN first","oLabel":"TR first","transFirst":true,"feel":"reckless-abandon — kederin pervasızlığı","sections":[["Core lines (minimal quote)",[["Bu akşam ölürüm beni kimse tutamaz","Tonight I die and no one's gonna hold me back","\"Ölürüm\" kendini bırakış; \"I could die\" diye yumuşatmak kararlılığı öldürür — bildirme kipi korundu. Rock register'ında \"gonna\" doğal. [his · literal-tercih]"],["Sen bile tutamazsın yıldızlar tutamaz","Not even you could hold me — not even the stars","\"Tutamaz\" tekrarı satırın nabzı → \"not even... not even\" paraleli; sen→yıldızlar tırmanışı korundu. [prozodi]"]]]]},{"id":"bir-derdim-var-tr-en","grp":"TR classics · TR→EN","title":"Bir Derdim Var","artist":"Mor ve Ötesi","pair":"TR→EN","engine":"0.1.1","tLabel":"EN first","oLabel":"TR first","transFirst":true,"feel":"cherished-ache — acısına sahip çıkma","sections":[["Core lines (minimal quote)",[["Bir derdim var","I carry this ache","\"Dert\" EN'de tek kelimeyle karşılıksız (trouble? sorrow? burden?); halk şiirinde dert taşınan, sahiplenilen şeydir — \"carry\" o sahiplenmeyi ekler, \"have\" edilgen kalırdı. [kültürel-kod]"],["Bin dermana değişmem","I wouldn't trade it for a thousand cures","Dert-derman çifti (Pir Sultan register'ı) şans eseri EN'de ache/cure ile eşlenir — kısmi register-ikizi; literal çeviri paradoksu (derdini sevmek) olduğu gibi taşır. [literal-tercih · kültürel-kod]"]]]]},{"id":"yigidim-aslanim-tr-en","grp":"TR classics · TR→EN","title":"Yiğidim Aslanım","artist":"Zülfü Livaneli","pair":"TR→EN","engine":"0.1.1","tLabel":"EN first","oLabel":"TR first","transFirst":true,"feel":"tender-elegy — yiğitlik övgüsüyle iç içe şefkat (şiir: Nâzım Hikmet)","sections":[["Core lines (minimal quote)",[["Yiğidim aslanım burda yatıyor","Here lies my brave one, my lionheart","\"Aslanım\" hem yiğitlik hem sevgi hitabı; \"my lion\" EN'de yabancı düşer, \"lionheart\" aynı çift yükü taşıyan hazır kültürel kod — çevirinin kilit hamlesi. \"Burda yatıyor\" → \"here lies\": eşlenik mezar taşı formülü, ritüeller diller arası ucuz taşınır. [register · kültürel-kod]"]]]]},{"id":"ohne-dich-de-tr","grp":"Daily picks · →TR","title":"Ohne Dich","artist":"Rammstein","pair":"DE→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"DE first","transFirst":true,"feel":"hollow-grief — kayıp sonrası sessizleşen dünya (7 Eyl)","sections":[["Core lines (minimal quote)",[["Ohne dich kann ich nicht sein, ohne dich","Sensiz olamıyorum ben, sensiz","\"Var olamam\" ağır kaçar; günlük \"olamıyorum\" aynı çaresizliği taşır. Baş-son \"ohne dich\" sarmalı (\"sensiz ... sensiz\") şarkının nabzı. [literal-tercih · prozodi]"],["Mit dir bin ich auch allein, ohne dich","Yanımdayken de yalnızım, sensiz","Şarkının en sert paradoksu. \"Seninle\" yerine \"yanımdayken\": fiziksel yakınlık + duygusal boşluk karşıtlığını tek kelime kurar. [his]"]]]]},{"id":"entre-dos-tierras-es-tr","grp":"Daily picks · →TR","title":"Entre Dos Tierras","artist":"Héroes del Silencio","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"suffocated-limbo — iki arada kalmışlığın boğuculuğu (6 Eyl)","sections":[["Core lines (minimal quote)",[["Entre dos tierras estás","İki arada bir deredesin","\"İki toprak arasındasın\" düz çevirisi hissi vermez; \"iki arada bir derede\" deyim-ikizi — deyim→deyim takası, 6 Eylül bulgusu. [metafor · kültürel-kod]"],["Y no dejas aire que respirar","Soluyacak hava bırakmıyorsun","Kararsızlığın boğuculuğu; literal aday güçlü, olduğu gibi taşındı. [literal-tercih]"]]]]},{"id":"nothing-else-matters-en-tr","grp":"Daily picks · →TR","title":"Nothing Else Matters","artist":"Metallica","pair":"EN→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"EN first","transFirst":true,"feel":"defiant-intimacy — dünyaya kapalı, tek kişiye açık (5 Eyl)","sections":[["Core lines (minimal quote)",[["So close, no matter how far","Ne kadar uzakta olsak da, bu kadar yakın","Uzak/yakın karşıtlığı satırın omurgası; TR söz dizimi karşıtlığı sona taşıyıp vuruşu büyütür. [prozodi]"],["Couldn't be much more from the heart","Bundan daha yürekten olamazdı","\"From the heart\" → \"yürekten\": birebir register-ikizi. [register · literal-tercih]"]]]]},{"id":"le-vent-nous-portera-fr-tr","grp":"Daily picks · →TR","title":"Le Vent Nous Portera","artist":"Noir Désir","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"serene-surrender — akıntıya bırakılmış dinginlik (8 Eyl)","sections":[["Core lines (minimal quote)",[["Je n'ai pas peur de la route","Yol korkutmuyor beni","Literal aday \"yoldan korkmuyorum\" da güçlü; devrik \"yol korkutmuyor beni\" özneyi yola verip şarkının kayıtsız dinginliğini taşır — literal-first check'e iki aday girdi. [his · literal-tercih]"],["Faudrait voir, faut qu'on y goûte","Görmek lazım, tadına varmak lazım","Konuşma dili gereklilik kipi (faudrait/faut) ↔ TR \"lazım\": birebir register-ikizi; resmi \"gerekir\" hissi öldürürdü. [register]"]]]]},{"id":"de-musica-ligera-es-tr","grp":"Daily picks · →TR","title":"De Música Ligera","artist":"Soda Stereo","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"bittersweet-anthem — vedanın marşa dönüşü (8 Eyl)","sections":[["Core lines (minimal quote)",[["Ella durmió al calor de las masas","Kalabalıkların sıcağında uyudu o","İmge (kitlelerin sıcaklığında uyumak) tuhaf ve güçlü — literal his-maksimumu, aynen taşındı. [metafor · literal-tercih]"],["Y yo desperté queriendo soñarla","Bense onu rüyamda görmek isteye isteye uyandım","Uyumak/uyanmak zıtlığı satır çiftinin omurgası; \"isteye isteye\" ikilemesi özlemi TR koduyla verir. [his · prozodi]"]]]]},{"id":"lamento-boliviano-es-tr","grp":"Daily picks · →TR","title":"Lamento Boliviano","artist":"Enanitos Verdes","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"defiant-melancholy — hüznün kafa tutuşu (8 Eyl)","sections":[["Core lines (minimal quote)",[["Y yo estoy aquí, borracho y loco","Ben de buradayım işte — sarhoş ve deli","\"İşte\" kelimesi omuz silkişi ekler: his çaresiz bir meydan okuma, şikâyet değil. [his · register]"],["Y mi corazón idiota siempre brillará","Bu salak kalbimse hep parlayacak","\"Idiota\" sevecen öz-aşağılama — TR \"salak kalbim\" aynı şefkatli ton; \"aptal\" fazla kuru kalırdı. [register]"]]]]},{"id":"litaliano-it-tr","grp":"Daily picks · →TR","title":"L'Italiano","artist":"Toto Cutugno","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"smiling-pride — gülümseyen memleket gururu (8 Eyl)","sections":[["Core lines (minimal quote)",[["Lasciatemi cantare, con la chitarra in mano","Bırakın da şarkımı söyleyeyim, elimde gitarla","\"Lasciatemi\" rica+sitem karışımı; TR \"bırakın da\" birebir register-ikizi. [register]"],["Sono un italiano, un italiano vero","Ben İtalyanım — hem de hasından","Literal \"gerçek bir İtalyan\" nüfus cüzdanı gibi okunur; övüncün TR register'ı \"hasından\". [register · kültürel-kod]"]]]]},{"id":"alors-on-danse-fr-tr","grp":"Daily picks · →TR","title":"Alors On Danse","artist":"Stromae","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"numb-hedonism — dertten dansa kaçış (8 Eyl)","sections":[["Core lines (minimal quote)",[["Qui dit étude dit travail","Okul demek, iş demek","\"Qui dit X dit Y\" zincir kalıbı ↔ TR \"X demek Y demek\": kalıp-ikizi — şarkının bütün kasveti bu domino zinciriyle kurulur, kalıp korunmazsa şarkı dağılır. [register · prozodi]"],["Alors on danse","Biz de dans ediyoruz","Kilit kelime \"alors\": \"o zaman dans!\" neşe okunur, oysa his tükenmiş bir omuz silkme — her şey üst üste binince geriye bir tek dans kalıyor. \"Biz de\" o çaresizliği taşır. [his]"]]]]},{"id":"me-gustas-tu-es-tr","grp":"Daily picks · →TR","title":"Me Gustas Tú","artist":"Manu Chao","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"playful-infatuation — sayıp döken hafif âşıklık (9 Eyl)","sections":[["Core lines (minimal quote)",[["Me gustas tú","Bir sen varsın ya","Literal \"senden hoşlanıyorum\" doğru ama şarkının sayıp döken, tekrarlı, hafif-âşık nakarat register'ını kaçırır; \"bir sen varsın\" o litany'yi taşır. [his · register]"],["¿Qué horas son, mi corazón?","Saat kaç oldu, canım benim?","\"Mi corazón\" ↔ \"canım\": ikisi de sevgili hitabı, birebir register-ikizi; literal-tercih kazandı. [register · literal-tercih]"]]]]},{"id":"piu-bella-cosa-it-tr","grp":"Daily picks · →TR","title":"Più Bella Cosa","artist":"Eros Ramazzotti","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"tender-superlative — üstünlük ilanına dönüşen sevgi (9 Eyl)","sections":[["Core lines (minimal quote)",[["Più bella cosa non c'è","Senden güzeli yok","İtalyanca'nın çift tekrarlı üstünlük yapısı (\"daha güzeli yok\") TR'de kısaltılarak korunuyor; prozodi için satır dengesi tutuldu. [his · biçim-gömülü]"],["Più bella cosa di te","En güzel şey sensin","İkinci yarı ilk yarının cevabı; \"daha güzeli yok\" → \"sen\" dönüşü TR'de düz ifadeyle güçlenir. [his]"]]]]},{"id":"derniere-danse-fr-tr","grp":"Daily picks · →TR","title":"Dernière Danse","artist":"Indila","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"melancholic-whirl — sarhoş savruluşta hüzün (9 Eyl)","sections":[["Core lines (minimal quote)",[["Oh ma douce souffrance","Ah tatlı acım benim","\"Douce souffrance\" = tatlı acı oksimoronu; TR \"tatlı acı\" ders kitabı karşılık, oksimoron birebir taşınıyor. [metafor]"],["Et je danse, danse, danse","Ve dönüyorum, dönüyorum","\"Dansediyorum\" hece-şişkin ve düz; \"dönüyorum\" hem melodiye yakın hem savruluş metaforunu güçlendiriyor — his>kelime tercihi. [his · prozodi]"]]]]},{"id":"let-her-go-en-tr","grp":"Daily picks · →TR","title":"Let Her Go","artist":"Passenger","pair":"EN→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"EN first","transFirst":true,"feel":"bittersweet-hindsight — geç kalmış pişmanlık (9 Eyl)","sections":[["Core lines (minimal quote)",[["Only know you love her when you let her go","Sevdiğini ancak gidince anlarsın","\"only...when\" karşıtlık kalıbı = geç kalmış pişmanlık; TR \"ancak...-ince\" kalıp-ikizi taşıyor. [biçim-gömülü]"],["Only miss the sun when it starts to snow","Güneşi ancak kar yağınca özlersin","Neredeyse birebir ve güçlü; kar/güneş karşıtlığı TR'de aynı hisle çalışıyor — literal-first check kazandı. [literal-tercih]"]]]]},{"id":"highway-to-hell-en-tr","grp":"Daily picks · →TR","title":"Highway to Hell","artist":"AC/DC","pair":"EN→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"EN first","transFirst":true,"feel":"reckless-swagger — kural tanımaz kabadayı neşesi (9 Eyl)","sections":[["Core lines (minimal quote)",[["I'm on the highway to hell","Cehenneme otoban bu","\"Highway to hell\" = umursamaz hedonizm/kabadayılık; \"cehenneme giden yol\" düz ve ağır, \"cehenneme otoban\" swagger'ı ve hızı taşıyor. [register · kültürel-kod]"],["No stop signs, speed limit","Ne dur levhası ne hız sınırı","Kural-tanımaz kabadayılık; TR \"ne...ne\" kalıbı listeyi ve umursamazlığı taşıyor. [register]"]]]]},{"id":"bamboleo-es-tr","grp":"Daily picks · →TR","title":"Bamboléo","artist":"Gipsy Kings","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"carefree-swagger — pişmanlıksız başına-buyrukluk (10 Eyl)","sections":[["Core lines (minimal quote)",[["Bamboléo, bambolea","Bamboléo — salına salına","\"Bamboleo\" = salınma; ses-sözcük nakaratta korunur (küresel loanword), anlamı TR ikilemesiyle: \"salına salına\" hem anlam hem ritim ikizi. [biçim-gömülü · prozodi]"],["Porque mi vida yo la prefiero vivir así","Çünkü ben hayatı böyle severim, böyle yaşarım","Çingene swagger'ı: pişmanlıksız meydan okuma; TR ikilemesi (\"böyle severim, böyle yaşarım\") aynı kafa tutan tekrarı kurar. [his · register]"]]]]},{"id":"azzurro-it-tr","grp":"Daily picks · →TR","title":"Azzurro","artist":"Adriano Celentano","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"blue-summer-longing — boş yaz öğleden sonrasının melankolisi (10 Eyl)","sections":[["Core lines (minimal quote)",[["Azzurro, il pomeriggio è troppo azzurro e lungo per me","Masmavi — bu öğleden sonra fazla mavi, fazla uzun bana","\"Azzurro\" İtalyan yazının boş-öğleden-sonra hüznü; mavi TR'de de hüzün kodu — kültürel kod ucuz taşındı. [kültürel-kod · his]"],["E allora io quasi quasi prendo il treno e vengo, vengo da te","Trene atlayıp gelsem mi, gelsem mi sana?","IT \"quasi quasi\"+şimdiki zaman kararsız-niyet kipi ↔ TR \"-sem mi\" soru kipi: iki dilde de ayak sürüyen karar anı gramerin İÇİNDE; tekrar (vengo, vengo ↔ gelsem mi, gelsem mi) korundu. [kalıp-ikizi/biçim-gömülü]"]]]]},{"id":"la-boheme-fr-tr","grp":"Daily picks · →TR","title":"La Bohème","artist":"Charles Aznavour","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"lost-youth-elegy — geri gelmeyecek gençliğe ağıt (10 Eyl)","sections":[["Core lines (minimal quote)",[["La bohème, la bohème / Ça voulait dire on est heureux","Bohemlik, bohemlik… / Mutluyuz demekti o zamanlar","\"Bohem\" TR'ye sızmış loanword (yaygınlık kontrolü pozitif) → gloss'suz keep; \"ça voulait dire\" geçmişten bakan tanım → \"demekti o zamanlar\" nostalji register'ı. [kültürel-kod · register]"],["Ça voulait dire on a vingt ans","Yirmi yaşında olmak demekti","Literal his-maksimumu; süsleme kayıp yaratırdı. [literal-tercih]"]]]]},{"id":"clandestino-es-tr","grp":"Daily picks · →TR","title":"Clandestino","artist":"Manu Chao","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"wandering-defiance — görünmez kılınmışın dik başlı yürüyüşü (10 Eyl)","sections":[["Core lines (minimal quote)",[["Me llaman el clandestino / Por no llevar papel","Bana kaçak diyorlar / Kâğıdım yok diye","\"Papel\"↔\"kâğıt\": belge metonimisi iki dilde birebir (\"kâğıtsız\") — literal tam his; \"kaçak\" da \"clandestino\"nun bütün yükünü taşıyor. [literal-tercih]"],["Perdido en el corazón / De la grande Babylon","Koca Babil'in kalbinde / Kaybolmuş gitmişim","\"Babylon\" Rasta kodunda ezen düzen; TR \"Babil\" kutsal-metin çağrışımını taşır, Rasta katmanı kısmen kayıp (bayraklı). \"-mIş gitmek\" kalıbı çaresizliği katmerler. [kültürel-kod · his]"]]]]},{"id":"99-luftballons-de-tr","grp":"Daily picks · →TR","title":"99 Luftballons","artist":"Nena","pair":"DE→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"DE first","transFirst":true,"feel":"innocent-apocalypse — oyuncakla başlayan kıyamet (10 Eyl)","sections":[["Core lines (minimal quote)",[["Hast du etwas Zeit für mich / Dann singe ich ein Lied für dich","Bana biraz vaktin var mı / Sana bir şarkı söyleyeyim","Kıyamet şarkısının çocuksu-samimi kapısı; \"-eyim\" istek kipi aynı masumiyeti kurar. [his · register]"],["99 Luftballons / Auf ihrem Weg zum Horizont","99 oyuncak balon / Süzülüyor ufka doğru","\"Luftballon\" = OYUNCAK balon (hava balonu değil); savaşı tetikleyenin oyuncak olması şarkının kalbi — \"oyuncak\" açıkça söylendi, hece maliyeti bilinçli takas. [kelime-seçimi→his]"]]]]},{"id":"rayando-el-sol-es-tr","grp":"Daily picks · →TR","title":"Rayando el Sol","artist":"Maná","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"futile-yearning — nafile uzanış (14 Eyl)","sections":[["Core lines (minimal quote)",[["Rayando el sol… desesperación","Güneşi tırmalıyorum… çaresizlik","\"Rayar\" = çizmek/tırmalamak: ulaşılmaza nafile sürtünme; TR \"tırmalamak\" aynı nafileliği taşır, \"güneşe uzanmak\" fazla soylu kalırdı. [metafor · his]"],["Es más fácil llegar al sol que a tu corazón","Güneşe varmak daha kolay, senin kalbine varmaktan","Literal his-maksimumu; \"varmak\" tekrarı orijinaldeki paralel yapıyı TR'de yeniden kurar. [literal-tercih · prozodi]"]]]]},{"id":"me-voy-es-tr","grp":"Daily picks · →TR","title":"Me Voy","artist":"Julieta Venegas","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"cheerful-goodbye — güle oynaya veda (14 Eyl)","sections":[["Core lines (minimal quote)",[["Qué lástima, pero adiós","Yazık oldu — ama hoşça kal","Kırgınlık + neşeli melodi çelişkisi şarkının kimliği; \"yazık oldu\" aynı omuz silken hafifliği taşır, \"ne yazık ki\" resmî kaçardı. [his · register]"],["Porque no supiste entender a mi corazón","Çünkü kalbimi anlamayı beceremedin","\"No supiste\" suçlamayı yeteneksizliğe çevirir; TR \"beceremedin\" aynı iğneyi taşır. [register]"]]]]},{"id":"caruso-it-tr","grp":"Daily picks · →TR","title":"Caruso","artist":"Lucio Dalla","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"dying-serenade — ölümün kıyısında aşk ilanı (14 Eyl)","sections":[["Core lines (minimal quote)",[["Te voglio bene assai, ma tanto tanto bene sai","Seni öyle seviyorum ki — öyle çok ki, bir bilsen","İKİNCİ LEHÇE VAKASI (Canzone d'Amore'den sonra): nakarat Napolice. IT \"ti amo / ti voglio bene\" ayrımı TR'de tek fiile düşer — kayıp \"bir bilsen\" samimiyet koduyla telafi; \"tanto tanto\" ikilemesi \"öyle çok ki\" vurgusuyla. [kültürel-kod · register · biçim-gömülü]"],["Qui dove il mare luccica, e tira forte il vento","Burada, denizin parıldadığı, rüzgârın deli estiği yerde","İmge literal taşınır; \"deli esmek\" TR kolokasyonu \"tira forte\"nin gücünü verir. [literal-tercih · his]"]]]]},{"id":"ne-me-quitte-pas-fr-tr","grp":"Daily picks · →TR","title":"Ne Me Quitte Pas","artist":"Jacques Brel","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"abject-plea — gururu yere seren yalvarış (14 Eyl)","sections":[["Core lines (minimal quote)",[["Ne me quitte pas","Gitme","Literal \"beni bırakma\" yalvarışı açıklar; TR'de yalvarışın en çıplak hali tek kelime. Daha az kelime, daha çok his — literal-first'ün ters yönü: bazen kırpma kazanıyor. [his · literal-tercih]"],["Moi je t'offrirai des perles de pluie venues de pays où il ne pleut pas","Sana yağmur incileri getireceğim — yağmurun hiç yağmadığı ülkelerden","İmkânsız hediye metaforu birebir taşınır; süsleme gerekmez. [metafor · literal-tercih]"]]]]},{"id":"the-unforgiven-en-tr","grp":"Daily picks · →TR","title":"The Unforgiven","artist":"Metallica","pair":"EN→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"EN first","transFirst":true,"feel":"buried-defiance — içe gömülmüş isyan (14 Eyl)","sections":[["Core lines (minimal quote)",[["What I've felt, what I've known / Never shined through in what I've shown","Hissettiklerim, bildiklerim / Gösterdiklerimde hiç ışımadı","felt/known/shown iç kafiyesi TR'de \"-diklerim\" paralel ekiyle karşılanır (biçim biçimle); \"ışımak\" içeriden gelen ışığı taşır. [prozodi · biçim-gömülü]"],["Never free, never me / So I dub thee unforgiven","Hiç özgür değil, hiç kendisi değil / Ve adını koyuyorum: Affedilmeyen","\"Dub thee\" arkaik şövalye-adlandırma ritüeli ↔ TR ritüel-ikizi \"adını koymak\"; başlığın çevirisi burada mühürlenir. [register · kültürel-kod]"]]]]},{"id":"a-dios-le-pido-es-tr","grp":"Daily picks · →TR","title":"A Dios le Pido","artist":"Juanes","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"pleading-devotion — halk duasının yalın yakarışı (15 Eyl)","sections":[["Core lines (minimal quote)",[["A Dios le pido","Tanrı'dan dilerim","\"Pedir a Dios\" halk duası kalıbı; \"dua ediyorum\" fazla kurumsal durur, \"dilerim\" aynı yalın yakarış tonunu verir. [register]"],["Que mi madre no se muera y que mi padre me recuerde","Anam ölmesin, babam beni unutmasın","\"Me recuerde\" birebir \"beni hatırlasın\"; TR'de olumlu kip duayı zayıflatıyor — olumsuz kalıp (\"unutmasın\") yakarışın gücünü taşıyor. \"Madre→anam\" halk duası ağzı. [his · register · literal-tercih]"]]]]},{"id":"la-solitudine-it-tr","grp":"Daily picks · →TR","title":"La Solitudine","artist":"Laura Pausini","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"shared-loneliness — iki kişiye ait yalnızlık (15 Eyl)","sections":[["Core lines (minimal quote)",[["Marco se n'è andato e non ritorna più","Marco gitti, bir daha da dönmeyecek","Ergen anlatıcının yalın cümlesi; süslemek sesi büyütür ve şarkıyı kaybettirir. [literal-tercih]"],["E il cuore non ha smesso di soffrire mai","Yüreğim acı çekmeyi hiç bırakmadı","\"Kalbim\" değil \"yüreğim\": TR'de acının organı yürek, kalp tıbbi kalır. [register]"]]]]},{"id":"je-veux-fr-tr","grp":"Daily picks · →TR","title":"Je Veux","artist":"ZAZ","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"cheerful-refusal — gülerek reddedilen konfor (15 Eyl)","sections":[["Core lines (minimal quote)",[["Donnez-moi une suite au Ritz, je n'en veux pas","Ritz'te süit verin bana — istemem","\"Je n'en veux pas\" kuru, tok bir ret; \"istemiyorum\" açıklama gibi durur, \"istemem\" kapıyı kapatır. [register]"],["Je veux de l'amour, de la joie, de la bonne humeur","Ben sevgi isterim, neşe isterim, keyif isterim","Tek \"je veux\"nün taşıdığı üçlü liste TR'de fiil tekrarıyla ritim kazanıyor; \"bonne humeur\" → \"keyif\" (\"iyi ruh hâli\" klinik düşer). [prozodi · kültürel-kod]"]]]]},{"id":"radioactive-en-tr","grp":"Daily picks · →TR","title":"Radioactive","artist":"Imagine Dragons","pair":"EN→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"EN first","transFirst":true,"feel":"apocalyptic-awakening — kıyamet sonrası dirilme (15 Eyl)","sections":[["Core lines (minimal quote)",[["I'm waking up to ash and dust","Küle, toza uyanıyorum","\"Ash and dust\" ikilisi TR'de ikileme olarak duruyor; \"üstüm başım kül toz\" hissi anlatır ama satırı şişirir — kısası daha çarpıcı. [his · prozodi]"],["Welcome to the new age","Yeni çağa hoş geldin","Çağrı ironik bir karşılama; \"hoş geldiniz\" resmileştirip ironiyi öldürür, tekil hitap korunur. [register]"]]]]},{"id":"major-tom-de-tr","grp":"Daily picks · →TR","title":"Major Tom (Völlig losgelöst)","artist":"Peter Schilling","pair":"DE→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"DE first","transFirst":true,"feel":"weightless-detachment — yerçekiminden de kendinden de kopuş (15 Eyl)","sections":[["Core lines (minimal quote)",[["Völlig losgelöst von der Erde","Yerden büsbütün kopmuş","\"Völlig losgelöst\" hem fiziksel kopuş hem \"kendinden geçmiş\" okuması taşır; TR \"büsbütün kopmuş\" aynı çift okumayı kurar (\"kopmak\" argoda da kendinden geçmek). Kalıp-ikizi: völlig + geçmiş sıfat-fiil ↔ büsbütün + -mIş. [biçim-gömülü · his]"],["Schwebt das Raumschiff völlig schwerelos","Uzay gemisi süzülüyor, ağırlıksız","\"Schwerelos\" satır sonunda asılı kalır; TR'de sıfatı sona atmak (devrik dizim) aynı asılı kalışı verir. [prozodi]"]]]]},{"id":"volare-cantavel-it-tr","grp":"Singable (cantável) sketches","title":"Volare (cantável)","artist":"Domenico Modugno","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"weightless-joy — uçuş sarhoşluğu; D8 söylenebilirlik denemesi (Dissyl 0.00-0.14)","sections":[["Core lines (minimal quote)",[["Volare… oh oh / Cantare… oh oh oh oh","Uçarım… oh oh / Söylerim… oh oh oh oh","3+3 hece birebir; melizma açık /a/ üstünde: \"la\"↔\"ça\". IT mastar → TR geniş zaman: kişi eki bedavaya geliyor. [prozodi · biçim-gömülü]"],["Nel blu dipinto di blu","Masmavi boyalı gökte","7→8 hece (Dissyl 0.14, söylenebilir eşik içinde); \"dipinto di blu\" ikilemesi → TR pekiştirmesi \"MASmavi\". [prozodi · biçim-gömülü]"]]]]},{"id":"despacito-es-tr","grp":"Popular picks · ES/IT/FR→TR","title":"Despacito","artist":"Luis Fonsi & Daddy Yankee","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"slow-burn seduction — ağırdan alınan arzu","sections":[["Core lines (minimal quote)",[["Despacito","Yavaşçacık","İspanyolca -ito küçültmesi yavaşlığa şefkat ve oyun katar; TR -çacık birebir aynı işi yapar — morfoloji her zaman kayıp değil, bu çiftte register-ikizi VAR. \"Yavaşça\" eksik kalırdı. [biçim-gömülü · register]"],["Quiero respirar tu cuello despacito","Nefesimi boynunda gezdirmek istiyorum, yavaşçacık","\"Boynunu solumak\" TR'de garip; his (yakınlık + ağırdan alma) nefesi gezdirmekte. Satır sonu \"yavaşçacık\" nakarat çapasını korur. [his]"]]]]},{"id":"la-camisa-negra-es-tr","grp":"Popular picks · ES/IT/FR→TR","title":"La Camisa Negra","artist":"Juanes","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"bitter-mourning-flirt — yas kılığında sitem","sections":[["Core lines (minimal quote)",[["Tengo la camisa negra","Üzerimde siyah gömlek var","Siyah gömlek = aşkın yası; kod (siyah=yas) TR'de aynen okunur, metafor GENİŞLETMEDEN taşınır. [kültürel-kod · metafor]"],["Hoy mi amor está de luto","Bugün aşkım yasta","\"Estar de luto\" → \"yasta olmak\": birebir ve his-maksimumu. [literal-tercih]"]]]]},{"id":"bella-ciao-it-tr","grp":"Popular picks · ES/IT/FR→TR","title":"Bella Ciao","artist":"İtalyan partizan türküsü","pair":"IT→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"IT first","transFirst":true,"feel":"defiant-farewell — gülümseyerek verilen veda","sections":[["Core lines (minimal quote)",[["Una mattina mi son svegliato","Bir sabah uyandım","Türkü dili iki kültürde de yalın; süslemek hissi bozar. [literal-tercih]"],["O bella ciao, bella ciao, bella ciao ciao ciao","O bella ciao... (çevrilmez)","Nakarat TR dinleyicinin kulağında zaten var (La Casa de Papel) — çevirirsen şarkı tanınmaz olur; gloss bir kez verilir: \"elveda güzelim\". Keep+gloss'un ders kitabı örneği. [kültürel-kod]"]]]]},{"id":"regrette-rien-fr-tr","grp":"Popular picks · ES/IT/FR→TR","title":"Non, Je Ne Regrette Rien","artist":"Édith Piaf","pair":"FR→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"FR first","transFirst":true,"feel":"scorched-slate pride — küllerin üstünde dimdik duruş","sections":[["Core lines (minimal quote)",[["Non, rien de rien","Hayır, hiç mi hiç","Fransızca katmerli olumsuzlama (rien de rien) TR ikilemesi \"hiç mi hiç\" ile birebir — vurgu müziği korunur. [prozodi · register]"],["Non, je ne regrette rien","Hayır, hiçbir şeyden pişman değilim","Bildirge gibi satır; yalın çeviri en güçlüsü. [literal-tercih]"]]]]},{"id":"la-graciosa-es-tr","grp":"Top 50 picks · ES/IT/FR→TR","title":"La Graciosa","artist":"Quevedo & Elvis Crespo","pair":"ES→TR","engine":"0.1.1","tLabel":"TR first","oLabel":"ES first","transFirst":true,"feel":"playful-vow — şımarık özgüvenle verilen söz (İspanya #2)","sections":[["Core lines (minimal quote)",[["No te voy a fallar, no","Seni yüzüstü bırakmayacağım","\"Fallar\" mekanik \"hayal kırıklığı\" değil; TR'nin \"yüzüstü bırakmak\" deyimi terk edilmişlik korkusuna birebir konuşur. Şarkının metaforu: kalp, az kişi alan küçük bir ada (La Graciosa). [his]"],["No te voy a engañar","Gözün arkada kalmayacak","Literal \"seni aldatmayacağım\" savunmada kalır; vaadin hissi TR'de \"gözün arkada kalmasın\" güven koduyla verilir — literal aday da geçerli, düzelt moduyla seçebilirsin. [register · kültürel-kod]"]]]]}];
+CATALOG.forEach((s)=>SONGS.push(s));
+
+
+// ── temel ──
+const $ = (id) => document.getElementById(id);
+const app = $("app"), lane = $("lane"), stream = $("stream");
+let song, lines, singable, transFirst, KEY;
+let idx = -1, mode = "idle", t0 = 0, timings = null, timers = [], capture = [];
+
+const b64u = {
+  enc: (u8) => btoa(String.fromCharCode(...u8)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+  dec: (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0)),
+};
+function encodeSong(s) {
+  const pkg = { v: 1, title: s.title, artist: s.artist, pair: s.pair, engine: s.engine,
+    tLabel: s.tLabel, oLabel: s.oLabel, feel: s.feel || "", sections: s.sections };
+  return "f1." + b64u.enc(pako.deflate(JSON.stringify(pkg)));
+}
+function decodeSong(frag) {
+  const raw = frag.replace(/^.*#/, "").replace(/^f1\./, "");
+  const pkg = JSON.parse(pako.inflate(b64u.dec(raw), { to: "string" }));
+  if (!pkg.sections) throw new Error("bad pkg");
+  const id = "link-" + (pkg.title + "-" + pkg.artist).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 48);
+  return { id, grp: "Opened from links", title: pkg.title, artist: pkg.artist, pair: pkg.pair || "?",
+    engine: pkg.engine || "?", tLabel: pkg.tLabel || "translation first", oLabel: pkg.oLabel || "original first",
+    transFirst: true, feel: pkg.feel || "", sections: pkg.sections };
+}
+
+// linkle gelen şarkıları bu tarayıcıda hatırla (yalnız bu cihaz; sunucu yok)
+function loadSaved() {
+  try { (JSON.parse(localStorage.getItem("fl-pub-songs") || "[]")).forEach((s) => {
+    if (!SONGS.some((x) => x.id === s.id)) SONGS.push(s);
+  }); } catch {}
+}
+function saveSong(s) {
+  if (!SONGS.some((x) => x.id === s.id)) SONGS.push(s);
+  try {
+    const keep = SONGS.filter((x) => x.grp === "Linkle gelenler");
+    localStorage.setItem("fl-pub-songs", JSON.stringify(keep));
+  } catch {}
+}
+
+// ── kütüphane ──
+function renderLibrary() {
+  const list = $("songlist"); list.innerHTML = "";
+  let lastGrp = null;
+  SONGS.forEach((s) => {
+    if (s.grp !== lastGrp) {
+      const g = document.createElement("div"); g.className = "grp"; g.textContent = s.grp;
+      list.appendChild(g); lastGrp = s.grp;
+    }
+    const b = document.createElement("button");
+    b.className = "song"; b.dataset.id = s.id;
+    b.innerHTML = `<span class="tt"><b></b><span></span></span><span class="pair"></span>`;
+    b.querySelector("b").textContent = s.title;
+    b.querySelector(".tt span").textContent = s.artist;
+    b.querySelector(".pair").textContent = s.pair;
+    b.addEventListener("click", () => { loadSong(s.id); app.classList.remove("libopen"); });
+    list.appendChild(b);
+  });
+  markLibrary();
+}
+function markLibrary() {
+  document.querySelectorAll(".song").forEach((b) => b.classList.toggle("on", song && b.dataset.id === song.id));
+}
+
+// ── şarkı yükle / çiz ──
+function loadSong(id) {
+  clearTimers();
+  song = SONGS.find((s) => s.id === id) || SONGS[0];
+  transFirst = song.transFirst !== false;
+  KEY = `fl-pub-t-${song.id}-${song.engine}`;
+  lines = [];
+  song.sections.forEach(([kind, arr]) => {
+    lines.push({ header: kind });
+    arr.forEach(([o, t, note]) => lines.push({ o, t, note }));
+  });
+  singable = lines.filter((l) => !l.header);
+  idx = -1; mode = "idle"; capture = [];
+  $("t-title").textContent = song.title;
+  $("t-sub").textContent = `${song.artist} · ${song.pair} · Feelyrics v${song.engine}`;
+  $("m-t").textContent = song.tLabel; $("m-o").textContent = song.oLabel;
+  $("notice").innerHTML = song.feel
+    ? `<b>Feel profile:</b> ${song.feel}`
+    : `Feelyrics translates lyrics not word for word but into the <b>closest feeling</b> — the line notes explain each call (✎ notes).`;
+  setSeg();
+  try { const v = JSON.parse(localStorage.getItem(KEY) || "null");
+    timings = Array.isArray(v) && v.length === singable.length ? v : null; } catch { timings = null; }
+  render(); markLibrary();
+  $("b-main").textContent = timings ? "Play synced" : "Start tap-sync";
+  setStatus(timings
+    ? "Timings are saved on this device. Start the track and hit <b>Play synced</b> at that exact moment."
+    : "Read along while listening — or play the track and tap each line to sync it.");
+}
+function setSeg() { $("m-t").classList.toggle("on", transFirst); $("m-o").classList.toggle("on", !transFirst); }
+function render() {
+  lane.innerHTML = "";
+  lines.forEach((l) => {
+    if (l.header) {
+      const h = document.createElement("div"); h.className = "kind"; h.textContent = l.header;
+      lane.appendChild(h); l.el = null; return;
+    }
+    const d = document.createElement("div"); d.className = "ln";
+    d.innerHTML = `<div class="main"></div><div class="alt"></div>` + (l.note ? `<div class="note"></div>` : "");
+    d.querySelector(".main").textContent = transFirst ? l.t : l.o;
+    d.querySelector(".alt").textContent = transFirst ? l.o : l.t;
+    if (l.note) d.querySelector(".note").textContent = l.note;
+    d.addEventListener("click", () => jumpTo(singable.indexOf(l)));
+    l.el = d; lane.appendChild(d);
+  });
+  paint();
+}
+
+// ── transport (tap-sync + senkron replay; yalnız bu cihaz) ──
+function paint() {
+  singable.forEach((l, i) => { l.el.classList.toggle("now", i === idx); l.el.classList.toggle("done", i < idx); });
+  app.classList.toggle("still", idx < 0 && mode === "idle");
+  $("prog").style.width = (idx < 0 ? 0 : ((idx + 1) / singable.length) * 100) + "%";
+  if (idx >= 0 && singable[idx].el) singable[idx].el.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+function setStatus(html) { $("status").innerHTML = html; }
+function advance() {
+  if (mode !== "tap") return;
+  if (idx >= singable.length - 1) return finishTap();
+  idx++; capture[idx] = performance.now() - t0; paint();
+  if (idx === singable.length - 1) finishTap();
+}
+function jumpTo(i) {
+  if (mode === "tap") { idx = i; capture[idx] = performance.now() - t0; paint(); if (idx === singable.length - 1) finishTap(); }
+  else { idx = i; paint(); }
+}
+function startTap() {
+  clearTimers(); capture = new Array(singable.length).fill(null);
+  mode = "tap"; idx = -1; t0 = performance.now(); paint();
+  setStatus("<b>Tap-sync on.</b> Tap (or press space) as each line is sung.");
+  $("b-main").textContent = "Finish"; stream.focus();
+}
+function finishTap() {
+  mode = "idle";
+  const got = capture.filter((x) => x != null).length;
+  if (got >= singable.length * 0.9) {
+    for (let i = 0; i < capture.length; i++) if (capture[i] == null) capture[i] = i ? capture[i - 1] + 2400 : 0;
+    timings = capture;
+    try { localStorage.setItem(KEY, JSON.stringify(timings)); } catch {}
+    setStatus("<b>Timings captured</b> (stored on this device). Rewind the track and hit Play synced.");
+  } else setStatus(`Captured ${got}/${singable.length} lines — run tap-sync again for a full take.`);
+  $("b-main").textContent = timings ? "Senkron oynat" : "Tap-sync başlat";
+}
+function startReplay() {
+  clearTimers(); mode = "replay"; idx = -1; paint();
+  setStatus("<b>Synced.</b> You should have pressed play right as the track started.");
+  timings.forEach((t, i) => timers.push(setTimeout(() => { idx = i; paint(); if (i === timings.length - 1) endReplay(); }, t)));
+}
+function endReplay() { mode = "idle"; setStatus("Done. Replay it, or tighten the timing with another tap-sync."); }
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+// ── paylaş / aç ──
+function openFromText(txt) {
+  try {
+    const s = decodeSong(txt.trim());
+    saveSong(s); renderLibrary(); loadSong(s.id);
+    setStatus("<b>Song opened from the link</b> and added to this device's library.");
+    return true;
+  } catch { return false; }
+}
+$("b-share").addEventListener("click", () => {
+  const base = location.href.split("#")[0];
+  $("share-text").value = base + "#" + encodeSong(song);
+  $("share-msg").textContent = "";
+  $("sharesheet").classList.add("open");
+});
+$("share-copy").addEventListener("click", async () => {
+  const t = $("share-text"); t.select();
+  let ok = false;
+  try { await navigator.clipboard.writeText(t.value); ok = true; } catch {
+    try { ok = document.execCommand("copy"); } catch {}
+  }
+  $("share-msg").textContent = ok ? "Copied." : "Couldn't copy — select the text and copy it manually.";
+});
+$("b-open").addEventListener("click", () => { app.classList.remove("libopen"); $("open-text").value = ""; $("opensheet").classList.add("open"); });
+$("open-go").addEventListener("click", () => {
+  if (openFromText($("open-text").value)) $("opensheet").classList.remove("open");
+  else { $("open-text").style.outline = "1px solid var(--ember)"; setTimeout(() => ($("open-text").style.outline = ""), 900); }
+});
+$("b-req").addEventListener("click", () => { app.classList.remove("libopen"); $("reqsheet").classList.add("open"); });
+document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => b.closest(".sheet").classList.remove("open")));
+
+// ── kontroller ──
+$("b-main").addEventListener("click", () => {
+  if (mode === "tap") return finishTap();
+  if (mode === "replay") { clearTimers(); return endReplay(); }
+  timings ? startReplay() : startTap();
+});
+$("b-reset").addEventListener("click", () => {
+  clearTimers(); mode = "idle"; idx = -1; timings = null; capture = [];
+  try { localStorage.removeItem(KEY); } catch {}
+  paint(); $("b-main").textContent = "Tap-sync başlat";
+  setStatus("Reset. Play the track and tap on each line.");
+});
+$("m-t").addEventListener("click", () => { transFirst = true; setSeg(); render(); });
+$("m-o").addEventListener("click", () => { transFirst = false; setSeg(); render(); });
+$("b-notes").addEventListener("click", () => { app.classList.toggle("notes"); $("b-notes").classList.toggle("on"); });
+$("b-lib").addEventListener("click", () => app.classList.toggle("libopen"));
+$("scrim").addEventListener("click", () => app.classList.remove("libopen"));
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Escape") document.querySelectorAll(".sheet.open").forEach((s) => s.classList.remove("open"));
+  const sheetOpen = !!document.querySelector(".sheet.open");
+  if (e.code === "Space" && !sheetOpen && !["TEXTAREA", "INPUT"].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    mode === "tap" ? advance() : (mode === "idle" && timings ? startReplay() : startTap());
+  }
+});
+stream.addEventListener("click", (e) => { if (mode === "tap" && !e.target.closest(".ln")) advance(); });
+
+// ── açılış ──
+loadSaved();
+renderLibrary();
+let opened = false;
+if (location.hash.length > 4) opened = openFromText(location.hash);
+if (!opened) loadSong(SONGS[0].id);
+window.addEventListener("hashchange", () => { if (location.hash.length > 4) openFromText(location.hash); });
+</script>
+</body></html>
