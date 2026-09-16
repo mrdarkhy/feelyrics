@@ -180,3 +180,5 @@
   .req.ready .rst{border-style:solid;border-color:rgba(183,197,107,.5);color:var(--acid)}
   .reqnote{padding:6px 10px 2px;font:italic 400 10.5px/1.5 var(--ui);color:var(--dim)}
   .reqnote a{color:var(--ember)}
+  /* fix (Sep 16): the request queue must never squeeze the song list out of the sidebar */
+  #reqqueue{flex:none;max-height:30vh;overflow-y:auto;border-top:1px solid var(--line);margin-top:6px;padding:0 10px 8px}
