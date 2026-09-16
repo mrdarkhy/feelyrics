@@ -1,5 +1,5 @@
 // Feelyrics — minimal offline cache for the static app
-const C = "feelyrics-v2";
+const C = "feelyrics-v3";
 const ASSETS = ["./", "./index.html", "./styles.css", "./songs.js", "./app.js"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(C).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

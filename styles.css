@@ -167,3 +167,16 @@
     .iseq,.itag,.iseq .on{opacity:1}
     .ln.now .main::after{animation:none}
   }
+
+  /* ── request queue (D11) ── */
+  .req{width:100%;text-align:left;display:flex;align-items:center;gap:10px;border:none;background:none;border-radius:10px;padding:7px 10px;color:var(--hi);font:inherit}
+  .req .tt{flex:1;min-width:0;line-height:1.25}
+  .req .tt b{display:block;font:700 12.5px var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--dim)}
+  .req.ready .tt b{color:var(--hi)}
+  .req .tt span{font:400 10.5px var(--ui);color:var(--dim)}
+  .req .rst{flex:none;font:600 9.5px var(--ui);letter-spacing:.06em;text-transform:uppercase;border:1px dashed var(--line);border-radius:99px;padding:3px 8px;color:var(--dim)}
+  .req.ready{cursor:pointer}
+  .req.ready:hover{background:var(--raised)}
+  .req.ready .rst{border-style:solid;border-color:rgba(183,197,107,.5);color:var(--acid)}
+  .reqnote{padding:6px 10px 2px;font:italic 400 10.5px/1.5 var(--ui);color:var(--dim)}
+  .reqnote a{color:var(--ember)}

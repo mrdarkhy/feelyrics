@@ -45,7 +45,7 @@ function saveSong(s) {
 
 // ── library: search + target/source filters ──
 const LANGS = { ES: "Spanish", IT: "Italian", NAP: "Italian", FR: "French", EN: "English", DE: "German", TR: "Turkish", "PT-BR": "Portuguese" };
-const SRC_ORDER = ["ES", "IT", "FR", "EN", "DE", "TR"];
+const SRC_ORDER = ["ES", "IT", "FR", "EN", "DE", "PT-BR", "TR"];
 const TGT_ORDER = ["TR", "EN", "ES", "PT-BR"];
 const INTO_LABEL = { TR: "Türkçe", EN: "English", ES: "Español", "PT-BR": "Português" };
 const srcOf = (s) => { const c = (s.pair || "").split("→")[0]; return c === "NAP" ? "IT" : c; };
@@ -140,7 +140,8 @@ function loadSong(id) {
   try { pubFixes = JSON.parse(localStorage.getItem("fl-pub-fix-" + song.id) || "{}"); } catch { pubFixes = {}; }
   idx = -1; mode = "idle"; capture = [];
   $("t-title").textContent = song.title;
-  $("t-sub").textContent = `${song.artist} · ${song.pair} · Feelyrics v${song.engine}`;
+  $("t-sub").textContent = `${song.artist} · ${song.pair} · Feelyrics v${song.engine}`
+    + (song.requestedBy ? ` · requested by ${song.requestedBy} ♥` : "");
   $("m-t").textContent = song.tLabel; $("m-o").textContent = song.oLabel;
   $("notice").innerHTML = song.feel
     ? `<b>Feel profile:</b> ${song.feel}`
@@ -212,7 +213,7 @@ function finishTap() {
     try { localStorage.setItem(KEY, JSON.stringify(timings)); } catch {}
     setStatus("<b>Timings captured</b> (stored on this device). Rewind the track and hit Play synced.");
   } else setStatus(`Captured ${got}/${singable.length} lines — run tap-sync again for a full take.`);
-  $("b-main").textContent = timings ? "Senkron oynat" : "Tap-sync başlat";
+  $("b-main").textContent = timings ? "Play synced" : "Start tap-sync";
 }
 function startReplay() {
   clearTimers(); mode = "replay"; idx = -1; paint();
@@ -262,7 +263,7 @@ $("b-main").addEventListener("click", () => {
 $("b-reset").addEventListener("click", () => {
   clearTimers(); mode = "idle"; idx = -1; timings = null; capture = [];
   try { localStorage.removeItem(KEY); } catch {}
-  paint(); $("b-main").textContent = "Tap-sync başlat";
+  paint(); $("b-main").textContent = "Start tap-sync";
   setStatus("Reset. Play the track and tap on each line.");
 });
 $("m-t").addEventListener("click", () => { transFirst = true; setSeg(); render(); });
@@ -445,6 +446,29 @@ $("fix-copy").addEventListener("click", async () => {
   catch { setStatus("Couldn\'t copy automatically — your fit is saved on this device."); }
 });
 
+// ── request queue (D11): who asked for what, and where it stands ──
+const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSduENEnGo7rQIAWEvv8gyqFY1xXjFg3z75VMEgRfDvJ0JS1Sg/viewform";
+function renderQueue() {
+  const box = $("reqqueue");
+  if (!box || typeof REQUESTS === "undefined" || !REQUESTS.length) return;
+  box.innerHTML = "";
+  const h = document.createElement("div"); h.className = "grp"; h.textContent = "Request queue"; box.appendChild(h);
+  REQUESTS.forEach((r) => {
+    const ready = r.status === "ready" && r.songId;
+    const d = document.createElement(ready ? "button" : "div");
+    d.className = "req" + (ready ? " ready" : "");
+    d.innerHTML = `<span class="tt"><b></b><span></span></span><span class="rst"></span>`;
+    d.querySelector("b").textContent = r.title;
+    d.querySelector(".tt span").textContent = r.artist + " · into " + r.into.join(" + ") + (r.by ? " · for " + r.by : "");
+    d.querySelector(".rst").textContent = ready ? "ready ♥" : (r.status === "lyrics-needed" ? "lyrics needed" : "queued");
+    if (ready) d.addEventListener("click", () => { loadSong(r.songId); app.classList.remove("libopen"); });
+    box.appendChild(d);
+  });
+  const n = document.createElement("div"); n.className = "reqnote";
+  n.innerHTML = `A “lyrics needed” song unlocks the moment someone pastes its lyrics in the <a href="${FORM_URL}" target="_blank" rel="noopener">request form</a> — lyrics are never scraped.`;
+  box.appendChild(n);
+}
+
 const qEl = $("q"), fromEl = $("f-from");
 if (qEl) qEl.addEventListener("input", (e) => { query = e.target.value; renderLibrary(); });
 if (fromEl) fromEl.addEventListener("change", (e) => { fromF = e.target.value; renderLibrary(); });
@@ -454,6 +478,7 @@ try {
 loadSaved();
 renderFilters();
 renderLibrary();
+renderQueue();
 let opened = false;
 if (location.hash.length > 4) opened = openFromText(location.hash);
 if (!opened) loadSong(SONGS[0].id);
